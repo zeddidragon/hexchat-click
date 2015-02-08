@@ -45,6 +45,7 @@ You will also need the Python plugin installed.
 ## History
 
 8/2 - 2015 Initial commit
+8/2 - 2015 Regex shenanigans
 
 ## Credits
 

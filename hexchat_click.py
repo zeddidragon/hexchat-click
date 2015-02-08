@@ -11,7 +11,7 @@ NEW_TAB=2
 user_defined_url_regex = hexchat.get_pluginpref('link_clicker_url_regex')
 
 url_history = []
-url_regex = user_defined_url_regex or ".*[:\/\/].*"
+url_regex = user_defined_url_regex or ".*:\/\/.*"
 
 usage = """
     Usage: /click <regex>, opens the first url match back in plugin's log
