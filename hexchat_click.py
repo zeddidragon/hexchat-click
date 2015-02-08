@@ -5,40 +5,18 @@ __module_description__ = "Click links with your keyboard"
 import re
 import hexchat
 import webbrowser
-
-NEW_TAB=2
+from collections import defaultdict
 
 user_defined_url_regex = hexchat.get_pluginpref('link_clicker_url_regex')
 
-url_history = []
+global_url_history = []
+url_history = defaultdict(lambda: defaultdict(list))
 url_regex = user_defined_url_regex or ".*:\/\/.*"
 
 usage = """
-    Usage: /click <regex>, opens the first url match back in plugin's log
+    Usage: /click <regex>, opens the first url match back in plugin's log.
+    Configure: /click -set_url_regex <new regex>
 """
-
-def set_url_regex(args, *_):
-    url_regex = args[1]
-    hexchat.set_pluginpref('link_clicker_url_regex', url_regex)
-
-def log_urls(args, *_):
-    for word in args[1].split():
-        if re.match(url_regex, word):
-            url_history.append(word) 
-
-def click_link(args, *_):
-    regex = args[1] if len(args) > 1 else ''
-
-    for url in reversed(url_history):
-        if re.match(".*%s.*" % regex, url):
-            webbrowser.open_new_tab(url) 
-            return hexchat.EAT_ALL
-
-    print("Unable to find urls matching '%s'" % regex)
-    return hexchat.EAT_ALL
-
-
-hexchat.hook_command('click', click_link, help=usage)
 
 logged_events = [
     "Your Message", "Your Action", "Channel Message", "Channel Action",
@@ -48,6 +26,43 @@ logged_events = [
     "Topic Creation", "Private Message", "Part with Reason", "Quit",
     "You Part with Reason"
 ]
+
+def set_url_regex(new_regex):
+    url_regex = new_regex
+    hexchat.set_pluginpref('link_clicker_url_regex', url_regex)
+
+def log_urls(args, *_):
+    server = hexchat.get_info('server')
+    channel = hexchat.get_info('channel')
+    for word in args[1].split():
+        if re.match(url_regex, word):
+            global_url_history.append(word)
+            url_history[server][channel].append(word) 
+
+def search_link(regex, arr):
+    for url in reversed(arr):
+        if re.match(".*%s.*" % regex, url):
+            return webbrowser.open_new_tab(url) 
+
+    print("Unable to find urls matching '%s'" % regex)
+
+def try_arg(args, i):
+    return args[i] if len(args) > i else ''
+
+def controller(args, *_):
+    if try_arg(args, 1) == "-set_url_regex":
+        set_url_regex(try_arg(args, 2))
+    elif try_arg(args, 1) == "-g":
+        search_link(try_arg(args, 2), global_url_history)
+    else:
+        server = hexchat.get_info('server')
+        channel = hexchat.get_info('channel')
+        search_link(try_arg(args, 1), url_history[server][channel])
+
+    return hexchat.EAT_ALL
+
+hexchat.hook_command('click', controller, help=usage)
+
 for event in logged_events:
     hexchat.hook_print(event, log_urls)
  

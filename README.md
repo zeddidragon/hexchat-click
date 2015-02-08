@@ -19,13 +19,13 @@ Either restart Hexchat or use this command to load the module:
 
 Will search backwards in the plugin's history for the first link that matches
 the regex. If you don't supply an argument, it'll simply open the last link
-posted in your client.
+posted in your channel.
 
 The plugin will start logging urls from all channels in memory. URLs from before
 the plugin was loaded are not remembered, nor will URLs from previous sessions.
 
-No distinction is made from which channel you're in, so be careful if you're in
-a lot of channels at once. /click may not open the link you think it's going to!
+To search outside the scope of your current channel, use
+/click -g [regex]
 
 ## Requirements
 
@@ -45,7 +45,10 @@ You will also need the Python plugin installed.
 ## History
 
 8/2 - 2015 Initial commit
+
 8/2 - 2015 Regex shenanigans
+
+8/2 - 2015 Per-channel log
 
 ## Credits
 
